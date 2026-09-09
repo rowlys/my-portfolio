@@ -10,8 +10,6 @@ import {
   SETTLE_TIME,
   ZOOM_LAMBDA,
   ZOOM_OUT_LAMBDA,
-  ZOOM_SETTLE_DELAY,
-  BACKGROUND_FADE_DURATION,
 } from "../../transitions/menuTiming";
 
 const MODEL_PATH = "/models/glasses-optimized.glb";
@@ -23,7 +21,6 @@ const ACTIVE_ROTATION: [number, number, number] = [0.05, -0.15, 0.02];
 const SIDE_SPIN_ANGLE = Math.PI * -4;
 const WORLD_UP = new THREE.Vector3(0, 1, 0);
 const REST_POSITION_X = 0.3;
-const GLINT_SWEEP_DURATION = 0.5;
 const MAX_DELTA = 1 / 30;
 
 function createOutlineGeometry(geometry: THREE.BufferGeometry, width: number) {
@@ -87,49 +84,6 @@ function createToonRamp() {
   return texture;
 }
 
-type LensShaderUniforms = {
-  uSweepCenter: { value: number };
-  uSweepWidth: { value: number };
-  uSweepStrength: { value: number };
-  uSweepColor: { value: THREE.Color };
-  uFlatBlend: { value: number };
-  uFlatColor: { value: THREE.Color };
-};
-
-function installLensSweep(material: THREE.MeshToonMaterial) {
-  material.onBeforeCompile = (shader) => {
-    shader.uniforms.uSweepCenter = { value: 0 };
-    shader.uniforms.uSweepWidth = { value: 0.35 };
-    shader.uniforms.uSweepStrength = { value: 0 };
-    shader.uniforms.uSweepColor = { value: new THREE.Color(0xffffff) };
-    shader.uniforms.uFlatBlend = { value: 0 };
-    shader.uniforms.uFlatColor = { value: new THREE.Color(0x000000) };
-
-    shader.vertexShader = shader.vertexShader
-      .replace("#include <common>", "#include <common>\nvarying vec3 vLensLocalPosition;")
-      .replace("#include <begin_vertex>", "#include <begin_vertex>\nvLensLocalPosition = position;");
-
-    shader.fragmentShader = shader.fragmentShader
-      .replace(
-        "#include <common>",
-        "#include <common>\nvarying vec3 vLensLocalPosition;\nuniform float uSweepCenter;\nuniform float uSweepWidth;\nuniform float uSweepStrength;\nuniform vec3 uSweepColor;\nuniform float uFlatBlend;\nuniform vec3 uFlatColor;",
-      )
-      .replace(
-        "#include <emissivemap_fragment>",
-        `#include <emissivemap_fragment>
-        float sweepDist = abs(vLensLocalPosition.x - uSweepCenter);
-        float sweepGlow = (1.0 - smoothstep(0.0, uSweepWidth, sweepDist)) * uSweepStrength;
-        totalEmissiveRadiance += uSweepColor * sweepGlow;`,
-      )
-      .replace(
-        "#include <colorspace_fragment>",
-        "#include <colorspace_fragment>\ngl_FragColor.rgb = mix(gl_FragColor.rgb, uFlatColor, uFlatBlend);",
-      );
-
-    material.userData.lensShader = shader as unknown as { uniforms: LensShaderUniforms };
-  };
-}
-
 export function GlassesModel({
   active = false,
   lensRef,
@@ -149,15 +103,10 @@ export function GlassesModel({
     () => new THREE.MeshToonMaterial({ gradientMap }),
     [gradientMap],
   );
-  const lensMaterial = useMemo(() => {
-    const material = new THREE.MeshToonMaterial({
-      gradientMap,
-      emissiveIntensity: 0,
-      side: THREE.DoubleSide,
-    });
-    installLensSweep(material);
-    return material;
-  }, [gradientMap]);
+  const lensMaterial = useMemo(
+    () => new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, toneMapped: false }),
+    [],
+  );
   const outlineMaterial = useMemo(
     () =>
       new THREE.MeshBasicMaterial({
@@ -166,7 +115,7 @@ export function GlassesModel({
     [],
   );
 
-  const { wrapper: model, lensTarget, modelRadius, lensXRange } = useMemo(() => {
+  const { wrapper: model, lensTarget, modelRadius } = useMemo(() => {
     const clone = scene.clone(true);
     const box = new THREE.Box3().setFromObject(clone);
     const center = box.getCenter(new THREE.Vector3());
@@ -202,8 +151,6 @@ export function GlassesModel({
 
     let widestLens: THREE.Mesh | null = null;
     let widestExtent = -Infinity;
-    let lensMinX = Infinity;
-    let lensMaxX = -Infinity;
     lenses.forEach((mesh) => {
       mesh.geometry.computeBoundingBox();
       const bbox = mesh.geometry.boundingBox;
@@ -212,12 +159,7 @@ export function GlassesModel({
         widestExtent = extent;
         widestLens = mesh;
       }
-      if (bbox) {
-        lensMinX = Math.min(lensMinX, bbox.min.x);
-        lensMaxX = Math.max(lensMaxX, bbox.max.x);
-      }
     });
-    const lensXRange = { min: lensMinX, max: lensMaxX };
 
     let lensTarget: LensTarget | null = null;
     if (widestLens) {
@@ -229,7 +171,7 @@ export function GlassesModel({
       .setFromObject(wrapper)
       .getBoundingSphere(new THREE.Sphere()).radius;
 
-    return { wrapper, lensTarget, modelRadius, lensXRange };
+    return { wrapper, lensTarget, modelRadius };
   }, [scene, frameMaterial, lensMaterial, outlineMaterial]);
 
   useEffect(() => {
@@ -237,21 +179,10 @@ export function GlassesModel({
     if (modelRadiusRef) modelRadiusRef.current = modelRadius;
   }, [lensTarget, lensRef, modelRadius, modelRadiusRef]);
 
-  const lensXRangeRef = useRef(lensXRange);
-  useEffect(() => {
-    lensXRangeRef.current = lensXRange;
-  }, [lensXRange]);
-
-  const lensMaterialRef = useRef(lensMaterial);
-  const lensBaseColorRef = useRef(new THREE.Color());
-
   useEffect(() => {
     frameMaterial.color.set(colors.foreground);
-    lensBaseColorRef.current.set(colors.accent);
     lensMaterial.color.set(colors.accent);
-    lensMaterial.emissive.set(colors.accent);
     outlineMaterial.color.set(colors.foreground);
-    lensMaterialRef.current = lensMaterial;
   }, [colors, frameMaterial, lensMaterial, outlineMaterial]);
 
   const startsActiveRef = useRef(active);
@@ -262,8 +193,6 @@ export function GlassesModel({
 
   const tumbleStart = useRef<number | null>(null);
   const activeBlend = useRef(active ? 1 : 0);
-  const activeStart = useRef<number | null>(null);
-  const inactiveStart = useRef<number | null>(null);
 
   useFrame((state, rawDelta) => {
     if (!group.current) return;
@@ -272,7 +201,6 @@ export function GlassesModel({
     if (tumbleStart.current === null) {
       if (startsActiveRef.current) {
         tumbleStart.current = t - SETTLE_TIME - 2;
-        activeStart.current = t - ZOOM_SETTLE_DELAY - BACKGROUND_FADE_DURATION - 1;
         group.current.rotation.set(ACTIVE_ROTATION[0], ACTIVE_ROTATION[1], ACTIVE_ROTATION[2]);
       } else {
         tumbleStart.current = t;
@@ -319,46 +247,6 @@ export function GlassesModel({
     group.current.position.x = THREE.MathUtils.damp(group.current.position.x, targetPositionX, 3.2, delta);
     group.current.position.y = THREE.MathUtils.damp(group.current.position.y, idleWobbleY, 3.2, delta);
     group.current.position.z = THREE.MathUtils.damp(group.current.position.z, 0, 3.2, delta);
-
-    const settleAt = prefersReducedMotion ? 0 : SETTLE_TIME;
-    const sinceSettle = elapsed - settleAt;
-    const lensShader = lensMaterialRef.current.userData.lensShader as
-      | { uniforms: LensShaderUniforms }
-      | undefined;
-    if (active) {
-      if (activeStart.current === null) activeStart.current = t;
-      inactiveStart.current = null;
-    } else {
-      activeStart.current = null;
-      if (inactiveStart.current === null) inactiveStart.current = t;
-    }
-    let colorBlend: number;
-    if (prefersReducedMotion) {
-      colorBlend = active ? 1 : 0;
-    } else if (active) {
-      const sinceActive = activeStart.current === null ? 0 : t - activeStart.current;
-      colorBlend = THREE.MathUtils.clamp((sinceActive - ZOOM_SETTLE_DELAY) / BACKGROUND_FADE_DURATION, 0, 1);
-    } else {
-      const sinceInactive = inactiveStart.current === null ? 0 : t - inactiveStart.current;
-      colorBlend = 1 - THREE.MathUtils.clamp(sinceInactive / BACKGROUND_FADE_DURATION, 0, 1);
-    }
-
-    if (lensShader) {
-      const range = lensXRangeRef.current;
-      const span = Math.max(range.max - range.min, 0.0001);
-      const pad = span * 0.35;
-      const sweepStart = range.max + pad;
-      const sweepEnd = range.min - pad;
-      const sweepProgress = THREE.MathUtils.clamp(sinceSettle / GLINT_SWEEP_DURATION, 0, 1);
-      lensShader.uniforms.uSweepCenter.value = THREE.MathUtils.lerp(sweepStart, sweepEnd, sweepProgress);
-      lensShader.uniforms.uSweepWidth.value = span * 0.25;
-      lensShader.uniforms.uSweepStrength.value =
-        sinceSettle > 0 && sinceSettle < GLINT_SWEEP_DURATION ? 1.6 : 0;
-      lensShader.uniforms.uSweepColor.value.set(colors.accentStrong);
-
-      lensShader.uniforms.uFlatBlend.value = colorBlend;
-      lensBaseColorRef.current.getRGB(lensShader.uniforms.uFlatColor.value, THREE.SRGBColorSpace);
-    }
   });
 
   return (
