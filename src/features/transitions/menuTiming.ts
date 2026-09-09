@@ -1,6 +1,4 @@
-export const FALL_DURATION = 1.55;
-export const FALL_TIMES = [0, 0.72, 1];
-export const IMPACT_TIME = FALL_DURATION * FALL_TIMES[1];
+export const FALL_DURATION = 3.5;
 export const SETTLE_TIME = FALL_DURATION;
 
 export const ZOOM_LAMBDA = 3.2;

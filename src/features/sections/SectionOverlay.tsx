@@ -12,9 +12,9 @@ import {
   type MotionValue,
 } from "framer-motion";
 import { BackLink } from "@/components/ui/BackLink";
-import { COLD_LOAD_RIPPLE_DELAY, EXIT_RIPPLE_DURATION, RIPPLE_DELAY, RIPPLE_DURATION } from "../hero/menuTiming";
-import { isColdLoad } from "../hero/coldLoad";
-import { beginSectionExit, resetSectionExit } from "../hero/sectionExit";
+import { COLD_LOAD_RIPPLE_DELAY, EXIT_RIPPLE_DURATION, RIPPLE_DELAY, RIPPLE_DURATION } from "../transitions/menuTiming";
+import { isColdLoad } from "../transitions/coldLoad";
+import { beginSectionExit, resetSectionExit } from "../transitions/sectionExit";
 
 const RIPPLE_ORIGIN = { xPct: 0, yPct: 100 } as const;
 const RIPPLE_EASE = [0.16, 1, 0.3, 1] as const;

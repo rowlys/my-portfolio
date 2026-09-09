@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion, useReducedMotion, type Easing } from "framer-motion";
 import { NAV_ITEMS, type Section } from "@/lib/navigation";
-import { ZOOM_NAV_EXIT_DURATION } from "./menuTiming";
+import { ZOOM_NAV_EXIT_DURATION } from "../transitions/menuTiming";
 
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
 const EXIT_TRANSITION = { duration: ZOOM_NAV_EXIT_DURATION, ease: [0.32, 0, 0.2, 1] as Easing };

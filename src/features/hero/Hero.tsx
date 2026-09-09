@@ -5,13 +5,13 @@ import { motion, useReducedMotion, type Easing } from "framer-motion";
 import { RadialField } from "./RadialField";
 import { NavList } from "./NavList";
 import { GlassesCanvas } from "./glasses/GlassesCanvas";
-import { FALL_DURATION, FALL_TIMES, RIPPLE_DELAY, RIPPLE_DURATION, ZOOM_NAV_EXIT_DURATION } from "./menuTiming";
-import { useSectionExiting } from "./sectionExit";
+import { FALL_DURATION, RIPPLE_DELAY, RIPPLE_DURATION, ZOOM_NAV_EXIT_DURATION } from "../transitions/menuTiming";
+import { useSectionExiting } from "../transitions/sectionExit";
 import { NAV_ITEMS } from "@/lib/navigation";
 import type { Profile } from "@/lib/types";
 
-const FALL_Y_KEYFRAMES = ["-240%", "45%", "0%"];
-const FALL_EASE: Easing[] = ["easeIn", "easeOut"];
+const FALL_Y_KEYFRAMES = ["-120%", "0%"];
+const FALL_EASE: Easing = "easeOut";
 
 const STAGE_CLASSES = "pointer-events-none absolute inset-0 z-20 h-full w-full";
 
@@ -70,7 +70,6 @@ export function Hero({ profile }: { profile: Profile }) {
               ? { duration: 0 }
               : {
                   duration: FALL_DURATION,
-                  times: FALL_TIMES,
                   ease: FALL_EASE,
                 }
           }

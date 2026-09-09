@@ -4,7 +4,7 @@ import { useRef, type RefObject } from "react";
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useReducedMotion } from "framer-motion";
-import { ZOOM_LAMBDA, ZOOM_OUT_LAMBDA } from "../menuTiming";
+import { ZOOM_LAMBDA, ZOOM_OUT_LAMBDA } from "../../transitions/menuTiming";
 import type { LensTarget } from "./GlassesModel";
 
 const IDLE_FILL_FRACTION = 0.65;
