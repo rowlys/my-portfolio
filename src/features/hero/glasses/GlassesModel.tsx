@@ -7,21 +7,21 @@ import { useFrame } from "@react-three/fiber";
 import { useReducedMotion } from "framer-motion";
 import { useThemeColors } from "@/hooks/useThemeColors";
 import {
-  IMPACT_TIME,
   SETTLE_TIME,
   ZOOM_LAMBDA,
   ZOOM_OUT_LAMBDA,
   ZOOM_SETTLE_DELAY,
   BACKGROUND_FADE_DURATION,
-} from "../menuTiming";
+} from "../../transitions/menuTiming";
 
 const MODEL_PATH = "/models/glasses-optimized.glb";
 const TARGET_SIZE = 2.6;
 const OUTLINE_WIDTH = 0.008;
 
 const REST_ROTATION: [number, number, number] = [0.3, 0.72, -0.95];
-const TUMBLE_OFFSET: [number, number, number] = [0.28, -0.32, 0.38];
 const ACTIVE_ROTATION: [number, number, number] = [0.05, -0.15, 0.02];
+const SIDE_SPIN_ANGLE = Math.PI * -4;
+const WORLD_UP = new THREE.Vector3(0, 1, 0);
 const REST_POSITION_X = 0.3;
 const GLINT_SWEEP_DURATION = 0.5;
 const MAX_DELTA = 1 / 30;
@@ -256,6 +256,10 @@ export function GlassesModel({
 
   const startsActiveRef = useRef(active);
 
+  const spinQuaternionRef = useRef(new THREE.Quaternion());
+  const idleEulerRef = useRef(new THREE.Euler());
+  const idleQuaternionRef = useRef(new THREE.Quaternion());
+
   const tumbleStart = useRef<number | null>(null);
   const activeBlend = useRef(active ? 1 : 0);
   const activeStart = useRef<number | null>(null);
@@ -272,58 +276,49 @@ export function GlassesModel({
         group.current.rotation.set(ACTIVE_ROTATION[0], ACTIVE_ROTATION[1], ACTIVE_ROTATION[2]);
       } else {
         tumbleStart.current = t;
-        group.current.rotation.set(
-          REST_ROTATION[0] + (prefersReducedMotion ? 0 : TUMBLE_OFFSET[0]),
-          REST_ROTATION[1] + (prefersReducedMotion ? 0 : TUMBLE_OFFSET[1]),
-          REST_ROTATION[2] + (prefersReducedMotion ? 0 : TUMBLE_OFFSET[2]),
-        );
+        group.current.rotation.set(REST_ROTATION[0], REST_ROTATION[1], REST_ROTATION[2]);
       }
     }
     const elapsed = t - tumbleStart.current;
-    const settle = prefersReducedMotion ? 1 : Math.min(elapsed / IMPACT_TIME, 1);
-    const lambda = 2.4 + settle * 2.2;
+    const settle = prefersReducedMotion ? 1 : Math.min(elapsed / SETTLE_TIME, 1);
 
-    const idleX = prefersReducedMotion ? 0 : Math.sin(t * 0.4) * 0.015;
-    const idleZ = prefersReducedMotion ? 0 : Math.sin(t * 0.33 + 1) * 0.012;
+    const idleX = prefersReducedMotion ? 0 : Math.sin(t * 0.2) * 0.15;
+    const idleY = prefersReducedMotion ? 0 : Math.sin(t * 0.2 + 2) * 0.1;
+    const idleZ = prefersReducedMotion ? 0 : Math.sin(t * 0.23 + 1) * 0.1;
 
-    const restRotX = REST_ROTATION[0] + TUMBLE_OFFSET[0] * (1 - settle) + idleX;
-    const restRotY = REST_ROTATION[1] + TUMBLE_OFFSET[1] * (1 - settle);
-    const restRotZ = REST_ROTATION[2] + TUMBLE_OFFSET[2] * (1 - settle) + idleZ;
+    if (settle < 1) {
+      const eased = 1 - Math.pow(1 - settle, 3);
+      const spinAngle = SIDE_SPIN_ANGLE * (1 - eased);
+      spinQuaternionRef.current.setFromAxisAngle(WORLD_UP, spinAngle);
+      idleQuaternionRef.current.setFromEuler(
+        idleEulerRef.current.set(REST_ROTATION[0] + idleX, REST_ROTATION[1] + idleY, REST_ROTATION[2] + idleZ),
+      );
+      group.current.quaternion.multiplyQuaternions(spinQuaternionRef.current, idleQuaternionRef.current);
+    } else {
+      const lambda = 4.6;
 
-    const targetActiveBlend = active ? 1 : 0;
-    activeBlend.current = prefersReducedMotion
-      ? targetActiveBlend
-      : THREE.MathUtils.damp(activeBlend.current, targetActiveBlend, active ? ZOOM_LAMBDA : ZOOM_OUT_LAMBDA, delta);
-    const targetRotX = THREE.MathUtils.lerp(restRotX, ACTIVE_ROTATION[0], activeBlend.current);
-    const targetRotY = THREE.MathUtils.lerp(restRotY, ACTIVE_ROTATION[1], activeBlend.current);
-    const targetRotZ = THREE.MathUtils.lerp(restRotZ, ACTIVE_ROTATION[2], activeBlend.current);
+      const restRotX = REST_ROTATION[0] + idleX;
+      const restRotY = REST_ROTATION[1] + idleY;
+      const restRotZ = REST_ROTATION[2] + idleZ;
 
-    group.current.rotation.x = THREE.MathUtils.damp(group.current.rotation.x, targetRotX, lambda, delta);
-    group.current.rotation.y = THREE.MathUtils.damp(group.current.rotation.y, targetRotY, lambda, delta);
-    group.current.rotation.z = THREE.MathUtils.damp(group.current.rotation.z, targetRotZ, lambda, delta);
+      const targetActiveBlend = active ? 1 : 0;
+      activeBlend.current = prefersReducedMotion
+        ? targetActiveBlend
+        : THREE.MathUtils.damp(activeBlend.current, targetActiveBlend, active ? ZOOM_LAMBDA : ZOOM_OUT_LAMBDA, delta);
+      const targetRotX = THREE.MathUtils.lerp(restRotX, ACTIVE_ROTATION[0], activeBlend.current);
+      const targetRotY = THREE.MathUtils.lerp(restRotY, ACTIVE_ROTATION[1], activeBlend.current);
+      const targetRotZ = THREE.MathUtils.lerp(restRotZ, ACTIVE_ROTATION[2], activeBlend.current);
+
+      group.current.rotation.x = THREE.MathUtils.damp(group.current.rotation.x, targetRotX, lambda, delta);
+      group.current.rotation.y = THREE.MathUtils.damp(group.current.rotation.y, targetRotY, lambda, delta);
+      group.current.rotation.z = THREE.MathUtils.damp(group.current.rotation.z, targetRotZ, lambda, delta);
+    }
 
     const idleWobbleY = prefersReducedMotion ? 0 : Math.sin(t * 0.5) * 0.015;
     const targetPositionX = prefersReducedMotion ? 0 : REST_POSITION_X;
     group.current.position.x = THREE.MathUtils.damp(group.current.position.x, targetPositionX, 3.2, delta);
     group.current.position.y = THREE.MathUtils.damp(group.current.position.y, idleWobbleY, 3.2, delta);
     group.current.position.z = THREE.MathUtils.damp(group.current.position.z, 0, 3.2, delta);
-
-    let targetScaleY = 1;
-    let targetScaleXZ = 1;
-    if (!prefersReducedMotion) {
-      if (elapsed < IMPACT_TIME) {
-        const fallProgress = elapsed / IMPACT_TIME;
-        targetScaleY = 1 + fallProgress * 0.04;
-        targetScaleXZ = 1 - fallProgress * 0.025;
-      } else {
-        const squashDecay = Math.exp(-(elapsed - IMPACT_TIME) * 6);
-        targetScaleY = 1 - squashDecay * 0.12;
-        targetScaleXZ = 1 + squashDecay * 0.07;
-      }
-    }
-    group.current.scale.x = THREE.MathUtils.damp(group.current.scale.x, targetScaleXZ, 18, delta);
-    group.current.scale.y = THREE.MathUtils.damp(group.current.scale.y, targetScaleY, 14, delta);
-    group.current.scale.z = THREE.MathUtils.damp(group.current.scale.z, targetScaleXZ, 18, delta);
 
     const settleAt = prefersReducedMotion ? 0 : SETTLE_TIME;
     const sinceSettle = elapsed - settleAt;
