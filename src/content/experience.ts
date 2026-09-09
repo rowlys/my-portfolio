@@ -1,6 +1,5 @@
 import { ExperienceEntry } from "@/lib/types";
 
-// Add a new job by pushing a new entry here — most recent first.
 export const experience: ExperienceEntry[] = [
   {
     id: "example-job",
