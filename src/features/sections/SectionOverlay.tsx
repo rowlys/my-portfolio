@@ -22,7 +22,15 @@ const RING_OFFSET_FRACTIONS = [0, 0.035, 0.075, 0.12, 0.175, 0.24] as const;
 const RING_OPACITIES = [1, 0.8, 0.6, 0.45, 0.3, 0.15] as const;
 const RING_WIDTHS = [18, 15, 12, 9, 6, 4] as const;
 
-export function SectionOverlay({ title, children }: { title: string; children: ReactNode }) {
+export function SectionOverlay({
+  title,
+  children,
+  fillViewport = false,
+}: {
+  title: string;
+  children: ReactNode;
+  fillViewport?: boolean;
+}) {
   const prefersReducedMotion = useReducedMotion();
   const router = useRouter();
   const backRef = useRef<HTMLAnchorElement>(null);
@@ -117,7 +125,9 @@ export function SectionOverlay({ title, children }: { title: string; children: R
       initial={false}
     >
       <motion.div
-        className="absolute inset-0 flex flex-col items-center justify-center overflow-y-auto bg-background"
+        className={`absolute inset-0 flex flex-col items-center overflow-y-auto bg-background ${
+          fillViewport ? "justify-start" : "justify-center"
+        }`}
         style={prefersReducedMotion ? undefined : { clipPath }}
       >
         <BackLink
@@ -129,11 +139,23 @@ export function SectionOverlay({ title, children }: { title: string; children: R
           ← Menu
         </BackLink>
 
-        <div className="flex flex-col items-center">
-          <h2 className="px-6 text-center font-display text-[clamp(3rem,14vw,10rem)] uppercase leading-[0.85] tracking-[-0.025em] text-foreground">
+        <div
+          className={`flex flex-col items-center ${
+            fillViewport ? "h-full w-full pb-4 pt-20 sm:pt-24" : ""
+          }`}
+        >
+          <h2
+            className={`shrink-0 px-6 text-center font-display uppercase leading-[0.85] tracking-[-0.025em] text-foreground ${
+              fillViewport ? "text-[clamp(2rem,7vw,4rem)]" : "text-[clamp(3rem,14vw,10rem)]"
+            }`}
+          >
             {title}
           </h2>
-          <div className="mt-6 w-full max-w-2xl px-6 text-center font-sans text-sm uppercase tracking-[0.2em] text-foreground">
+          <div
+            className={`mt-6 text-center font-sans text-sm uppercase tracking-[0.2em] text-foreground ${
+              fillViewport ? "flex w-full min-h-0 flex-1 flex-col px-4 sm:px-8" : "w-full max-w-2xl px-6"
+            }`}
+          >
             {children}
           </div>
         </div>
