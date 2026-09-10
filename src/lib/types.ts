@@ -29,5 +29,10 @@ export type Profile = {
   name: string;
   tagline: string;
   about: string;
+  education: {
+    school: string;
+    program: string;
+    gpa: number;
+  };
   links: { label: string; href: string }[];
 };
