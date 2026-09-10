@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function ExperiencePage() {
   return (
-    <SectionOverlay title="Experience">
+    <SectionOverlay title="Experience" fillViewport>
       <ExperienceSection experience={experience} />
     </SectionOverlay>
   );
