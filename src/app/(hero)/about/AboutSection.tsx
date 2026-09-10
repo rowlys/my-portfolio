@@ -2,37 +2,23 @@
 
 import { motion, useReducedMotion, type Easing } from "framer-motion";
 import type { Profile } from "@/lib/types";
+import { Panel, LABEL_CLASS, DIVIDER_CLASS } from "@/components/ui/Panel";
 
 const GPA_SCALE = 4.0;
 const BAR_EASE: Easing = [0.16, 1, 0.3, 1];
 const BAR_DELAY = 0.5;
 const BAR_DURATION = 5;
 
-const LABEL_CLASS = "font-mono text-[0.65rem] uppercase tracking-[0.25em] text-foreground sm:text-xs";
-const DIVIDER_CLASS = "h-px w-full max-w-sm bg-foreground/20";
-
-function CornerTicks() {
-  return (
-    <>
-      <span aria-hidden className="absolute -left-px -top-px h-3 w-3 border-l border-t border-foreground" />
-      <span aria-hidden className="absolute -right-px -top-px h-3 w-3 border-r border-t border-foreground" />
-      <span aria-hidden className="absolute -bottom-px -left-px h-3 w-3 border-b border-l border-foreground" />
-      <span aria-hidden className="absolute -bottom-px -right-px h-3 w-3 border-b border-r border-foreground" />
-    </>
-  );
-}
-
 function NameBanner({ profile }: { profile: Profile }) {
   return (
-    <div className="relative border border-foreground/25 px-6 py-4 sm:px-10 sm:py-5">
-      <CornerTicks />
+    <Panel className="px-6 py-4 sm:px-10 sm:py-5">
       <p className="font-display text-3xl uppercase leading-none tracking-[-0.02em] sm:text-4xl">
         {profile.name}
       </p>
       <p className={`mt-2 ${LABEL_CLASS}`}>
         {profile.education.program} · {profile.education.school}
       </p>
-    </div>
+    </Panel>
   );
 }
 
