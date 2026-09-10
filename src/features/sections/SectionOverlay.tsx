@@ -117,13 +117,12 @@ export function SectionOverlay({ title, children }: { title: string; children: R
       initial={false}
     >
       <motion.div
-        className="absolute inset-0 flex flex-col items-center justify-center overflow-y-auto bg-accent"
+        className="absolute inset-0 flex flex-col items-center justify-center overflow-y-auto bg-background"
         style={prefersReducedMotion ? undefined : { clipPath }}
       >
         <BackLink
           ref={backRef}
           href="/"
-          variant="light"
           className="absolute left-5 top-5 sm:left-8 sm:top-8"
           onNavigate={handleBackLinkNavigate}
         >
@@ -131,10 +130,10 @@ export function SectionOverlay({ title, children }: { title: string; children: R
         </BackLink>
 
         <div className="flex flex-col items-center">
-          <h2 className="px-6 text-center font-display text-[clamp(3rem,14vw,10rem)] uppercase leading-[0.85] tracking-[-0.025em] text-background">
+          <h2 className="px-6 text-center font-display text-[clamp(3rem,14vw,10rem)] uppercase leading-[0.85] tracking-[-0.025em] text-foreground">
             {title}
           </h2>
-          <div className="mt-6 w-full max-w-2xl px-6 text-center font-sans text-sm uppercase tracking-[0.2em] text-background">
+          <div className="mt-6 w-full max-w-2xl px-6 text-center font-sans text-sm uppercase tracking-[0.2em] text-foreground">
             {children}
           </div>
         </div>
