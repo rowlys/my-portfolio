@@ -6,10 +6,13 @@ import { SkillsSection } from "./SkillsSection";
 import { skillCategories } from "@/content/skills";
 import { profile } from "@/content/profile";
 import { SKILL_ICON_FILE } from "@/content/skillIcons";
+import { sectionMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: `Skills | ${profile.name}`,
-};
+export const metadata: Metadata = sectionMetadata(
+  "Skills",
+  `Programming languages, frameworks, and infrastructure tools ${profile.name} works with.`,
+  "/skills",
+);
 
 function readSkillIcons(): Record<string, string> {
   const iconsDir = path.join(process.cwd(), "public", "icons", "skills");

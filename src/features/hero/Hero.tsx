@@ -33,7 +33,7 @@ export function Hero({ profile }: { profile: Profile }) {
     <main className="relative flex min-h-dvh flex-col overflow-hidden bg-background text-foreground">
       <RadialField />
 
-      <motion.p
+      <motion.h1
         aria-hidden={isActive}
         inert={isActive || undefined}
         className={`absolute left-5 top-5 z-40 font-sans text-xs font-medium uppercase tracking-[0.3em] text-foreground sm:left-8 sm:top-8 ${
@@ -45,7 +45,7 @@ export function Hero({ profile }: { profile: Profile }) {
         }
       >
         { profile.name }
-      </motion.p>
+      </motion.h1>
 
       <div className="relative flex flex-1 flex-col items-center px-6 pb-14 pt-[42vh] sm:px-10 md:grid md:grid-cols-[minmax(0,1fr)_auto] md:justify-items-stretch md:gap-x-[6vw] md:py-20 md:pr-[10vw]">
         <nav aria-label="Main menu" className="w-full max-w-xl md:col-start-2">

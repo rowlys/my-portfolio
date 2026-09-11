@@ -5,10 +5,13 @@ import { ProjectsSection } from "./ProjectsSection";
 import { getAllProjects } from "@/lib/content";
 import { profile } from "@/content/profile";
 import { MDXImage } from "./_components/MDXImage";
+import { sectionMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: `Projects | ${profile.name}`,
-};
+export const metadata: Metadata = sectionMetadata(
+  "Projects",
+  `Selected software and game development projects by ${profile.name}.`,
+  "/projects",
+);
 
 export default function ProjectsPage() {
   const projects = getAllProjects();

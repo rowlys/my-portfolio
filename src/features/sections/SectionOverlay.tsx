@@ -144,13 +144,13 @@ export function SectionOverlay({
             fillViewport ? "h-full w-full pb-4 pt-20 sm:pt-24" : ""
           }`}
         >
-          <h2
+          <h1
             className={`shrink-0 px-6 text-center font-display uppercase leading-[0.85] tracking-[-0.025em] text-foreground ${
               fillViewport ? "text-[clamp(2rem,7vw,4rem)]" : "text-[clamp(3rem,14vw,10rem)]"
             }`}
           >
             {title}
-          </h2>
+          </h1>
           <div
             className={`mt-6 text-center font-sans text-sm uppercase tracking-[0.2em] text-foreground ${
               fillViewport ? "flex w-full min-h-0 flex-1 flex-col px-4 sm:px-8" : "w-full max-w-2xl px-6"
