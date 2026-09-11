@@ -57,11 +57,16 @@ export function CameraRig({
     idleLookAt.current.set(-idleNdcX * idleHalfWidth, -idleNdcY * idleHalfHeight, 0);
 
     const targetProgress = active ? 1 : 0;
-    progress.current = prefersReducedMotion
-      ? targetProgress
-      : THREE.MathUtils.damp(progress.current, targetProgress, active ? ZOOM_LAMBDA : ZOOM_OUT_LAMBDA, delta);
-
     const target = lensRef.current;
+
+    if (!target) {
+      progress.current = targetProgress;
+    } else {
+      progress.current = prefersReducedMotion
+        ? targetProgress
+        : THREE.MathUtils.damp(progress.current, targetProgress, active ? ZOOM_LAMBDA : ZOOM_OUT_LAMBDA, delta);
+    }
+
     if (progress.current < 0.001 || !target) {
       camera.position.copy(idlePosition.current);
       camera.lookAt(idleLookAt.current);

@@ -1,18 +1,15 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { motion, useReducedMotion, type Easing } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { RadialField } from "./RadialField";
 import { NavList } from "./NavList";
 import { GlassesCanvas } from "./glasses/GlassesCanvas";
-import { FALL_DURATION, RIPPLE_DELAY, RIPPLE_DURATION, ZOOM_NAV_EXIT_DURATION } from "../transitions/menuTiming";
+import { RIPPLE_DELAY, RIPPLE_DURATION, ZOOM_NAV_EXIT_DURATION } from "../transitions/menuTiming";
 import { useSectionExiting } from "../transitions/sectionExit";
 import { useIsDesktopLayout } from "@/hooks/useIsDesktopLayout";
 import { NAV_ITEMS } from "@/lib/navigation";
 import type { Profile } from "@/lib/types";
-
-const FALL_Y_KEYFRAMES = ["-120%", "0%"];
-const FALL_EASE: Easing = "easeOut";
 
 const STAGE_CLASSES = "pointer-events-none absolute inset-0 z-20 h-full w-full";
 
@@ -63,21 +60,7 @@ export function Hero({ profile }: { profile: Profile }) {
             : { delay: RIPPLE_DELAY + RIPPLE_DURATION, duration: 0 }
         }
       >
-        <motion.div
-          className="h-full w-full"
-          initial={{ y: prefersReducedMotion ? "0%" : FALL_Y_KEYFRAMES[0] }}
-          animate={{ y: prefersReducedMotion ? "0%" : FALL_Y_KEYFRAMES }}
-          transition={
-            prefersReducedMotion
-              ? { duration: 0 }
-              : {
-                  duration: FALL_DURATION,
-                  ease: FALL_EASE,
-                }
-          }
-        >
-          <GlassesCanvas active={isActive} centered={!isDesktop} />
-        </motion.div>
+        <GlassesCanvas active={isActive} centered={!isDesktop} />
       </motion.div>
     </main>
   );

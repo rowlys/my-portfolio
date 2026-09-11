@@ -23,6 +23,8 @@ const WORLD_UP = new THREE.Vector3(0, 1, 0);
 const REST_POSITION_X = 0.3;
 const MAX_DELTA = 1 / 30;
 
+const FALL_START_Y_OFFSET = 8;
+
 function createOutlineGeometry(geometry: THREE.BufferGeometry, width: number) {
   const outlineGeometry = geometry.clone();
   const position = outlineGeometry.attributes.position as THREE.BufferAttribute;
@@ -188,6 +190,8 @@ export function GlassesModel({
   }, [colors, frameMaterial, lensMaterial, outlineMaterial]);
 
   const startsActiveRef = useRef(active);
+  const fallResolvedRef = useRef(active);
+  const tumbleResolvedRef = useRef(active);
 
   const spinQuaternionRef = useRef(new THREE.Quaternion());
   const idleEulerRef = useRef(new THREE.Euler());
@@ -207,10 +211,19 @@ export function GlassesModel({
       } else {
         tumbleStart.current = t;
         group.current.rotation.set(REST_ROTATION[0], REST_ROTATION[1], REST_ROTATION[2]);
+        if (!prefersReducedMotion) {
+          group.current.position.y = FALL_START_Y_OFFSET;
+        }
       }
     }
-    const elapsed = t - tumbleStart.current;
-    const settle = prefersReducedMotion ? 1 : Math.min(elapsed / SETTLE_TIME, 1);
+    let settle = prefersReducedMotion ? 1 : Math.min((t - tumbleStart.current) / SETTLE_TIME, 1);
+
+    if (active && settle < 1 && !tumbleResolvedRef.current) {
+      tumbleStart.current = t - SETTLE_TIME - 2;
+      group.current.rotation.set(REST_ROTATION[0], REST_ROTATION[1], REST_ROTATION[2]);
+      settle = 1;
+    }
+    if (settle >= 1) tumbleResolvedRef.current = true;
 
     const idleX = prefersReducedMotion ? 0 : Math.sin(t * 0.2) * 0.15;
     const idleY = prefersReducedMotion ? 0 : Math.sin(t * 0.2 + 2) * 0.1;
@@ -247,7 +260,13 @@ export function GlassesModel({
     const idleWobbleY = prefersReducedMotion ? 0 : Math.sin(t * 0.5) * 0.015;
     const targetPositionX = prefersReducedMotion || centered ? 0 : REST_POSITION_X;
     group.current.position.x = THREE.MathUtils.damp(group.current.position.x, targetPositionX, 3.2, delta);
-    group.current.position.y = THREE.MathUtils.damp(group.current.position.y, idleWobbleY, 3.2, delta);
+    if (active && !fallResolvedRef.current) {
+      group.current.position.y = idleWobbleY;
+
+      fallResolvedRef.current = true;
+    } else {
+      group.current.position.y = THREE.MathUtils.damp(group.current.position.y, idleWobbleY, 3.2, delta);
+    }
     group.current.position.z = THREE.MathUtils.damp(group.current.position.z, 0, 3.2, delta);
   });
 
