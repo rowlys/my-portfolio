@@ -4,7 +4,7 @@ import { SectionOverlay } from "@/features/sections/SectionOverlay";
 import { ProjectsSection } from "./ProjectsSection";
 import { getAllProjects } from "@/lib/content";
 import { profile } from "@/content/profile";
-import { MDXImage } from "@/app/projects/[slug]/MDXImage";
+import { MDXImage } from "./_components/MDXImage";
 
 export const metadata: Metadata = {
   title: `Projects — ${profile.name}`,

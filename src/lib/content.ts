@@ -29,7 +29,3 @@ export function getAllProjects(): Project[] {
     })
     .sort((a, b) => (a.date < b.date ? 1 : -1));
 }
-
-export function getProject(slug: string): Project | undefined {
-  return getAllProjects().find((project) => project.slug === slug);
-}
