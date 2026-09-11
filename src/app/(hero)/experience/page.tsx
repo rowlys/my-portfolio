@@ -5,7 +5,7 @@ import { experience } from "@/content/experience";
 import { profile } from "@/content/profile";
 
 export const metadata: Metadata = {
-  title: `Experience — ${profile.name}`,
+  title: `Experience | ${profile.name}`,
 };
 
 export default function ExperiencePage() {

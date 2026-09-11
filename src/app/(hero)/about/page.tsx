@@ -4,7 +4,7 @@ import { AboutSection } from "./AboutSection";
 import { profile } from "@/content/profile";
 
 export const metadata: Metadata = {
-  title: `About — ${profile.name}`,
+  title: `About | ${profile.name}`,
   description: profile.tagline,
 };
 

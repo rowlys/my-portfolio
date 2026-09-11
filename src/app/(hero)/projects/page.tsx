@@ -7,7 +7,7 @@ import { profile } from "@/content/profile";
 import { MDXImage } from "./_components/MDXImage";
 
 export const metadata: Metadata = {
-  title: `Projects — ${profile.name}`,
+  title: `Projects | ${profile.name}`,
 };
 
 export default function ProjectsPage() {

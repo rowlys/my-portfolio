@@ -8,7 +8,7 @@ import { profile } from "@/content/profile";
 import { SKILL_ICON_FILE } from "@/content/skillIcons";
 
 export const metadata: Metadata = {
-  title: `Skills — ${profile.name}`,
+  title: `Skills | ${profile.name}`,
 };
 
 function readSkillIcons(): Record<string, string> {
