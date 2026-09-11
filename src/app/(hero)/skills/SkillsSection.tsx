@@ -6,70 +6,117 @@ import type { SkillCategory } from "@/lib/types";
 
 const EASE: Easing = [0.16, 1, 0.3, 1];
 const GRID_SIZE = 5;
-const NEIGHBORS_PER_NODE = 2;
 
-function hashString(value: string) {
-  let hash = 0;
-  for (let i = 0; i < value.length; i++) {
-    hash = (Math.imul(31, hash) + value.charCodeAt(i)) | 0;
-  }
-  return hash;
-}
+type GridPosition = { row: number; col: number };
 
-function mulberry32(seed: number) {
-  let state = seed;
-  return () => {
-    state |= 0;
-    state = (state + 0x6d2b79f5) | 0;
-    let t = Math.imul(state ^ (state >>> 15), 1 | state);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+const SKILL_LAYOUTS: Record<string, Record<string, GridPosition>> = {
+  "programming-languages": {
+  
+    TypeScript: { row: 0, col: 0 },
+    CSS: { row: 0, col: 1 },
+    Python: { row: 0, col: 3 },
+    JavaScript: { row: 1, col: 0 },
+    HTML: { row: 1, col: 1 },
+    SQL: { row: 2, col: 2 },
+    "C#": { row: 3, col: 1 },
+    Go: { row: 3, col: 3 },
+    "C++": { row: 4, col: 1 },
+  },
+  "frameworks-engines": {
+  
+    React: { row: 0, col: 0 },
+    "Next.js": { row: 0, col: 1 },
+    "Node.js": { row: 2, col: 0 },
+    "Express.js": { row: 2, col: 1 },
+    FastAPI: { row: 2, col: 3 },
+    Gin: { row: 3, col: 4 },
+    Unity: { row: 4, col: 0 },
+    Godot: { row: 4, col: 1 },
+  },
+  "infrastructure-tools": {
+  
+    Docker: { row: 2, col: 2 },
+    PostgreSQL: { row: 1, col: 1 },
+    Supabase: { row: 1, col: 3 },
+    MongoDB: { row: 3, col: 1 },
+    "Cloudflare R2": { row: 3, col: 3 },
+  },
+  misc: {
+  
+    English: { row: 1, col: 1 },
+    Writing: { row: 2, col: 1 },
+    "Scientific Writing": { row: 2, col: 2 },
+    "System Analysis": { row: 2, col: 3 },
+    "Problem Solving": { row: 3, col: 3 },
+  },
+};
 
-function seededShuffle<T>(items: T[], seed: number): T[] {
-  const rng = mulberry32(seed);
-  const result = [...items];
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
-}
+const SKILL_CONNECTIONS: Record<string, [string, string][]> = {
+  "programming-languages": [
+    ["TypeScript", "CSS"],
+    ["TypeScript", "JavaScript"],
+    ["CSS", "HTML"],
+    ["JavaScript", "HTML"],
+    ["HTML", "SQL"],
+    ["Python", "SQL"],
+    ["SQL", "C#"],
+    ["SQL", "Go"],
+    ["C#", "C++"],
+  ],
+  "frameworks-engines": [
+    ["React", "Next.js"],
+    ["Node.js", "Express.js"],
+    ["React", "Node.js"],
+    ["Express.js", "FastAPI"],
+    ["FastAPI", "Gin"],
+    ["Node.js", "Unity"],
+    ["Unity", "Godot"],
+  ],
+  "infrastructure-tools": [
+    ["Docker", "PostgreSQL"],
+    ["Docker", "Supabase"],
+    ["Docker", "MongoDB"],
+    ["Docker", "Cloudflare R2"],
+    ["PostgreSQL", "Supabase"],
+  ],
+  misc: [
+    ["English", "Writing"],
+    ["Writing", "Scientific Writing"],
+    ["Scientific Writing", "System Analysis"],
+    ["System Analysis", "Problem Solving"],
+  ],
+};
 
 type GridNode = { skill: string; x: number; y: number };
 
-function gridNodesFor(category: SkillCategory): GridNode[] {
-  const cellCount = GRID_SIZE * GRID_SIZE;
-  const cells = seededShuffle(
-    Array.from({ length: cellCount }, (_, i) => i),
-    hashString(category.id),
-  );
-
-  return category.skills.map((skill, index) => {
-    const cell = cells[index % cellCount];
-    const row = Math.floor(cell / GRID_SIZE);
-    const col = cell % GRID_SIZE;
+function nodesFor(category: SkillCategory): GridNode[] {
+  const layout = SKILL_LAYOUTS[category.id] ?? {};
+  return category.skills.map((skill) => {
+    const position = layout[skill];
+    if (!position && process.env.NODE_ENV !== "production") {
+      console.warn(`SkillsSection: no grid position defined for "${skill}" in "${category.id}"`);
+    }
     return {
       skill,
-      x: ((col + 0.5) / GRID_SIZE) * 100,
-      y: ((row + 0.5) / GRID_SIZE) * 100,
+      x: ((position?.col ?? 0) + 0.5) * (100 / GRID_SIZE),
+      y: ((position?.row ?? 0) + 0.5) * (100 / GRID_SIZE),
     };
   });
 }
 
-function nearestNeighborEdges(nodes: GridNode[]) {
-  const edges = new Set<string>();
-  nodes.forEach((node, i) => {
-    const nearest = nodes
-      .map((other, j) => ({ j, d: i === j ? Infinity : Math.hypot(other.x - node.x, other.y - node.y) }))
-      .sort((a, b) => a.d - b.d)
-      .slice(0, NEIGHBORS_PER_NODE);
-    nearest.forEach(({ j }) => edges.add(i < j ? `${i}:${j}` : `${j}:${i}`));
-  });
-  return Array.from(edges, (key) => {
-    const [a, b] = key.split(":").map(Number);
-    return { a, b };
+function edgesFor(category: SkillCategory, nodes: GridNode[]) {
+  const indexBySkill = new Map(nodes.map((node, index) => [node.skill, index]));
+  const pairs = SKILL_CONNECTIONS[category.id] ?? [];
+  return pairs.flatMap(([a, b]) => {
+    const i = indexBySkill.get(a);
+    const j = indexBySkill.get(b);
+    if (i === undefined || j === undefined) {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn(`SkillsSection: connection references unknown skill in "${category.id}": ${a} <-> ${b}`);
+      }
+      return [];
+    }
+    return [{ a: i, b: j }];
   });
 }
 
@@ -200,8 +247,8 @@ function SkillMap({
   squareSize: number;
   prefersReducedMotion: boolean | null;
 }) {
-  const nodes = gridNodesFor(category);
-  const edges = nearestNeighborEdges(nodes);
+  const nodes = nodesFor(category);
+  const edges = edgesFor(category, nodes);
   const cell = squareSize / GRID_SIZE;
   const tileSize = Math.max(30, Math.min(68, cell * 0.72));
   const [activeSkill, setActiveSkill] = useState<string | null>(null);
