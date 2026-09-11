@@ -126,23 +126,47 @@ function CategoryTabs({
   );
 }
 
-function SkillNode({ skill, iconMarkup, size }: { skill: string; iconMarkup?: string; size: number }) {
+function SkillNode({
+  skill,
+  iconMarkup,
+  size,
+  isActive,
+  onToggle,
+}: {
+  skill: string;
+  iconMarkup?: string;
+  size: number;
+  isActive: boolean;
+  onToggle: () => void;
+}) {
+  const prefersReducedMotion = useReducedMotion();
+
   return (
-    <div
+    <button
+      type="button"
+      onClick={onToggle}
       className="group relative flex flex-col items-center focus:outline-none"
-      tabIndex={0}
       aria-label={iconMarkup ? skill : undefined}
+      aria-pressed={iconMarkup ? isActive : undefined}
     >
-      <div
-        className={`relative flex items-center justify-center border border-foreground/25 bg-panel transition-colors duration-150 group-hover:border-accent group-focus-visible:border-accent ${
+      <motion.div
+        className={`relative flex origin-bottom items-center justify-center border bg-panel transition-[border-color] duration-150 ${
           iconMarkup ? "" : "px-1"
+        } ${
+          isActive
+            ? "border-accent"
+            : "border-foreground/25 group-hover:border-accent group-focus-visible:border-accent"
         }`}
         style={{ width: size, height: size }}
+        animate={{ scale: isActive ? 1.25 : 1 }}
+        transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, ease: EASE }}
       >
         {iconMarkup ? (
           <div
             aria-hidden
-            className="h-full w-full p-2 text-foreground transition-colors duration-150 group-hover:text-accent group-focus-visible:text-accent [&>svg]:h-full [&>svg]:w-full"
+            className={`h-full w-full p-2 transition-colors duration-150 [&>svg]:h-full [&>svg]:w-full ${
+              isActive ? "text-accent" : "text-foreground group-hover:text-accent group-focus-visible:text-accent"
+            }`}
             dangerouslySetInnerHTML={{ __html: iconMarkup }}
           />
         ) : (
@@ -150,13 +174,18 @@ function SkillNode({ skill, iconMarkup, size }: { skill: string; iconMarkup?: st
             {skill}
           </span>
         )}
-      </div>
+      </motion.div>
       {iconMarkup && (
-        <span className="pointer-events-none absolute top-full z-10 mt-1.5 whitespace-nowrap border border-foreground/20 bg-panel px-1.5 py-0.5 font-mono text-[0.55rem] uppercase tracking-[0.15em] text-foreground opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 sm:text-[0.6rem]">
+        <motion.span
+          className="pointer-events-none absolute top-full z-10 mt-1.5 whitespace-nowrap border border-foreground/20 bg-panel px-1.5 py-0.5 font-mono text-[0.55rem] uppercase tracking-[0.15em] text-foreground sm:text-[0.6rem]"
+          initial={false}
+          animate={{ opacity: isActive ? 1 : 0, y: isActive ? 0 : -4 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.2, ease: EASE }}
+        >
           {skill}
-        </span>
+        </motion.span>
       )}
-    </div>
+    </button>
   );
 }
 
@@ -175,6 +204,7 @@ function SkillMap({
   const edges = nearestNeighborEdges(nodes);
   const cell = squareSize / GRID_SIZE;
   const tileSize = Math.max(30, Math.min(68, cell * 0.72));
+  const [activeSkill, setActiveSkill] = useState<string | null>(null);
 
   return (
     <motion.div
@@ -208,14 +238,20 @@ function SkillMap({
         <motion.div
           key={skill}
           className="absolute -translate-x-1/2 -translate-y-1/2"
-          style={{ left: `${x}%`, top: `${y}%` }}
+          style={{ left: `${x}%`, top: `${y}%`, zIndex: activeSkill === skill ? 50 : undefined }}
           initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={
             prefersReducedMotion ? { duration: 0 } : { duration: 0.3, delay: 0.1 + index * 0.04, ease: EASE }
           }
         >
-          <SkillNode skill={skill} iconMarkup={skillIcons[skill]} size={tileSize} />
+          <SkillNode
+            skill={skill}
+            iconMarkup={skillIcons[skill]}
+            size={tileSize}
+            isActive={activeSkill === skill}
+            onToggle={() => setActiveSkill((current) => (current === skill ? null : skill))}
+          />
         </motion.div>
       ))}
     </motion.div>
