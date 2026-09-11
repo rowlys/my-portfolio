@@ -4,7 +4,7 @@ export type Project = {
   summary: string;
   tags: string[];
   date: string;
-  coverImage?: string;
+  images: string[];
   links?: { label: string; href: string }[];
   content: string;
 };

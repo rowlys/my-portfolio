@@ -53,3 +53,63 @@ body {
   background: var(--accent);
   color: var(--background);
 }
+
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.mdx-dossier {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.mdx-dossier h2 {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  color: var(--accent);
+}
+
+.mdx-dossier p {
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: var(--foreground);
+  opacity: 0.8;
+}
+
+.mdx-dossier ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.mdx-dossier li {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--foreground);
+  opacity: 0.8;
+}
+
+.mdx-dossier li::before {
+  content: "▸";
+  flex-shrink: 0;
+  color: var(--accent);
+  opacity: 1;
+}
+
+.mdx-dossier a {
+  color: var(--accent);
+  text-underline-offset: 4px;
+}

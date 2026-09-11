@@ -6,10 +6,10 @@ import { MDXImage } from "./MDXImage";
 export function ProjectDetail({ project }: { project: Project }) {
   return (
     <article className="flex flex-col gap-6 text-left normal-case tracking-normal">
-      {project.coverImage && (
+      {project.images[0] && (
         <div className="relative aspect-[16/9] w-full overflow-hidden rounded-sm">
           <Image
-            src={project.coverImage}
+            src={project.images[0]}
             alt={project.title}
             fill
             sizes="(min-width: 768px) 700px, 100vw"

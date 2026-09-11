@@ -1,33 +1,47 @@
-import Image from "next/image";
-import Link from "next/link";
-import type { Project } from "@/lib/types";
+"use client";
 
-export function ProjectsSection({ projects }: { projects: Project[] }) {
+import { useState, type ReactNode } from "react";
+import { AnimatePresence, useReducedMotion } from "framer-motion";
+import type { Project } from "@/lib/types";
+import { ProjectNavScroller } from "./_components/ProjectNavScroller";
+import { ProjectDossier } from "./_components/ProjectDossier";
+
+export function ProjectsSection({
+  projects,
+  renderedContent,
+}: {
+  projects: Project[];
+  renderedContent: Record<string, ReactNode>;
+}) {
+  const prefersReducedMotion = useReducedMotion();
+  const [activeSlug, setActiveSlug] = useState(projects[0]?.slug ?? "");
+  const activeProject = projects.find((project) => project.slug === activeSlug) ?? projects[0];
+
   if (projects.length === 0) {
     return <p className="normal-case tracking-normal">Projects are on their way.</p>;
   }
 
   return (
-    <ul className="flex flex-col gap-6">
-      {projects.map((project) => (
-        <li key={project.slug}>
-          {project.coverImage && (
-            <div className="relative mb-2 aspect-[16/9] w-full overflow-hidden rounded-sm">
-              <Image
-                src={project.coverImage}
-                alt={project.title}
-                fill
-                sizes="(min-width: 768px) 400px, 100vw"
-                style={{ objectFit: "cover" }}
-              />
-            </div>
+    <div className="flex h-full min-h-0 w-full flex-1 flex-col items-center gap-6">
+      <ProjectNavScroller
+        projects={projects}
+        activeSlug={activeProject?.slug ?? ""}
+        onSelect={setActiveSlug}
+      />
+
+      <div className="min-h-0 w-full flex-1 overflow-y-auto px-2 pb-8">
+        <AnimatePresence initial={false} mode="wait">
+          {activeProject && (
+            <ProjectDossier
+              key={activeProject.slug}
+              project={activeProject}
+              rendered={renderedContent[activeProject.slug]}
+              position={projects.indexOf(activeProject) + 1}
+              prefersReducedMotion={prefersReducedMotion}
+            />
           )}
-          <Link href={`/projects/${project.slug}`} className="underline underline-offset-4">
-            {project.title}
-          </Link>
-          <p className="mt-1 normal-case tracking-normal opacity-70">{project.summary}</p>
-        </li>
-      ))}
-    </ul>
+        </AnimatePresence>
+      </div>
+    </div>
   );
 }

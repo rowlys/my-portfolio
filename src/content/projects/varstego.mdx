@@ -1,0 +1,15 @@
+---
+title: "VARStego"
+summary: "A variance-based steganography technique for hiding data inside digital media, developed during data-security research at NCC Laboratory."
+tags: ["Python", "Steganography", "Research"]
+date: "2025-11"
+links: [{ label: "Paper", href: "https://www.techscience.com/cmc/online/detail/28064" }]
+---
+
+VARStego is a data-hiding technique built around local variance in a cover image. Rather than modifying pixels uniformly, it embeds payload bits more heavily in high-variance (busy, detailed) regions and backs off in flat ones, keeping the change harder to spot statistically than a naive least-significant-bit scheme.
+
+## What it is
+
+- Grew out of research work on data security and data hiding at NCC Laboratory, alongside a previous technique, BASMEDSECURE.
+- Targets the usual steganalysis trade-off: capacity vs. detectability, using local image statistics to decide where it's "safe" to hide more as well as a redundancy-based embedding algorithm.
+- Utilizes the Huffman Encoding scheme to minimize required bit embeds.

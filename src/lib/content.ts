@@ -22,7 +22,7 @@ export function getAllProjects(): Project[] {
         summary: data.summary,
         tags: data.tags ?? [],
         date: data.date,
-        coverImage: data.coverImage,
+        images: data.images ?? [],
         links: data.links ?? [],
         content,
       } satisfies Project;
