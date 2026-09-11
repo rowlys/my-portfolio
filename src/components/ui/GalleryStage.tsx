@@ -47,7 +47,7 @@ export function GalleryStage({ images, title }: { images: string[]; title: strin
           </AnimatePresence>
           <span
             aria-hidden
-            className="pointer-events-none absolute bottom-3 right-3 border border-foreground/20 bg-panel px-2 py-1 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-foreground opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100"
+            className="pointer-events-none absolute bottom-3 right-3 border border-foreground/20 bg-panel px-2 py-1 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-foreground opacity-100 transition-opacity duration-150 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-visible:opacity-100"
           >
             Enlarge
           </span>
