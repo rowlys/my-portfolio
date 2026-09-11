@@ -10,15 +10,19 @@ import type { LensTarget } from "./GlassesModel";
 const IDLE_FILL_FRACTION = 0.65;
 const IDLE_NDC_X = -0.3;
 const IDLE_NDC_Y = 0;
+const COMPACT_IDLE_FILL_FRACTION = 0.34;
+const COMPACT_IDLE_NDC_Y = 0.52;
 const LENS_OVERSHOOT = 0.32;
 const MAX_DELTA = 1 / 30;
 
 export function CameraRig({
   active,
+  centered = false,
   lensRef,
   modelRadiusRef,
 }: {
   active: boolean;
+  centered?: boolean;
   lensRef: RefObject<LensTarget | null>;
   modelRadiusRef: RefObject<number>;
 }) {
@@ -40,13 +44,17 @@ export function CameraRig({
     const aspect = size.width / size.height;
     const halfTan = Math.tan(verticalFov / 2);
 
+    const idleFillFraction = centered ? COMPACT_IDLE_FILL_FRACTION : IDLE_FILL_FRACTION;
+    const idleNdcX = centered ? 0 : IDLE_NDC_X;
+    const idleNdcY = centered ? COMPACT_IDLE_NDC_Y : IDLE_NDC_Y;
+
     const modelRadius = modelRadiusRef.current;
-    const idleDistance = modelRadius / (IDLE_FILL_FRACTION * halfTan);
+    const idleDistance = modelRadius / (idleFillFraction * halfTan);
     const idleHalfHeight = idleDistance * halfTan;
     const idleHalfWidth = idleHalfHeight * aspect;
 
     idlePosition.current.set(0, 0, idleDistance);
-    idleLookAt.current.set(-IDLE_NDC_X * idleHalfWidth, -IDLE_NDC_Y * idleHalfHeight, 0);
+    idleLookAt.current.set(-idleNdcX * idleHalfWidth, -idleNdcY * idleHalfHeight, 0);
 
     const targetProgress = active ? 1 : 0;
     progress.current = prefersReducedMotion

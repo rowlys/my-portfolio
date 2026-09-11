@@ -26,21 +26,19 @@ function NavLink({
       <Link
         href={`/${section}`}
         aria-controls="section-panel"
-        className="group relative inline-block py-1 text-right font-display leading-[0.85] text-[clamp(2.75rem,7vw,6rem)] uppercase tracking-[-0.025em] text-foreground transition-[color,transform] duration-200 hover:text-accent focus-visible:text-accent focus-visible:outline-none"
-        style={{ transformOrigin: "right center" }}
+        className="group relative inline-block origin-center py-1 text-center font-display leading-[0.85] text-[clamp(2.75rem,7vw,6rem)] uppercase tracking-[-0.025em] text-foreground transition-[color,transform] duration-200 hover:text-accent focus-visible:text-accent focus-visible:outline-none md:origin-right md:text-right"
       >
         <motion.span
-          className="relative z-10 inline-block"
+          className="relative z-10 inline-block origin-center md:origin-right"
           whileHover={{ scale: 1.05 }}
           whileFocus={{ scale: 1.05 }}
           transition={{ type: "spring", stiffness: 380, damping: 24 }}
-          style={{ transformOrigin: "right center" }}
         >
           {label}
         </motion.span>
         <span
           aria-hidden
-          className="absolute inset-x-0 bottom-1 h-[0.14em] origin-right scale-x-0 bg-accent transition-transform duration-300 ease-out group-hover:scale-x-100 group-focus-visible:scale-x-100"
+          className="absolute inset-x-0 bottom-1 h-[0.14em] origin-center scale-x-0 bg-accent transition-transform duration-300 ease-out group-hover:scale-x-100 group-focus-visible:scale-x-100 md:origin-right"
         />
         <span
           aria-hidden
@@ -58,8 +56,7 @@ export function NavList({ isActive }: { isActive: boolean }) {
     <motion.ul
       aria-hidden={isActive}
       inert={isActive || undefined}
-      className={`flex flex-col items-end gap-y-4 sm:gap-y-6 md:gap-y-8 ${isActive ? "pointer-events-none" : ""}`}
-      style={{ transformOrigin: "right center" }}
+      className={`flex origin-center flex-col items-center gap-y-4 sm:gap-y-6 md:origin-right md:items-end md:gap-y-8 ${isActive ? "pointer-events-none" : ""}`}
       animate={{
         x: prefersReducedMotion || !isActive ? "0vw" : "14vw",
         scale: prefersReducedMotion || !isActive ? 1 : 0.94,

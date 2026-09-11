@@ -86,10 +86,12 @@ function createToonRamp() {
 
 export function GlassesModel({
   active = false,
+  centered = false,
   lensRef,
   modelRadiusRef,
 }: {
   active?: boolean;
+  centered?: boolean;
   lensRef?: RefObject<LensTarget | null>;
   modelRadiusRef?: RefObject<number>;
 }) {
@@ -243,7 +245,7 @@ export function GlassesModel({
     }
 
     const idleWobbleY = prefersReducedMotion ? 0 : Math.sin(t * 0.5) * 0.015;
-    const targetPositionX = prefersReducedMotion ? 0 : REST_POSITION_X;
+    const targetPositionX = prefersReducedMotion || centered ? 0 : REST_POSITION_X;
     group.current.position.x = THREE.MathUtils.damp(group.current.position.x, targetPositionX, 3.2, delta);
     group.current.position.y = THREE.MathUtils.damp(group.current.position.y, idleWobbleY, 3.2, delta);
     group.current.position.z = THREE.MathUtils.damp(group.current.position.z, 0, 3.2, delta);

@@ -7,6 +7,7 @@ import { NavList } from "./NavList";
 import { GlassesCanvas } from "./glasses/GlassesCanvas";
 import { FALL_DURATION, RIPPLE_DELAY, RIPPLE_DURATION, ZOOM_NAV_EXIT_DURATION } from "../transitions/menuTiming";
 import { useSectionExiting } from "../transitions/sectionExit";
+import { useIsDesktopLayout } from "@/hooks/useIsDesktopLayout";
 import { NAV_ITEMS } from "@/lib/navigation";
 import type { Profile } from "@/lib/types";
 
@@ -26,6 +27,7 @@ export function Hero({ profile }: { profile: Profile }) {
   const isActive = isSectionRoute(pathname);
   const isExiting = useSectionExiting();
   const stageVisible = !isActive || isExiting;
+  const isDesktop = useIsDesktopLayout();
 
   return (
     <main className="relative flex min-h-dvh flex-col overflow-hidden bg-background text-foreground">
@@ -45,7 +47,7 @@ export function Hero({ profile }: { profile: Profile }) {
         { profile.name }
       </motion.p>
 
-      <div className="relative grid flex-1 grid-cols-1 items-center justify-items-center gap-y-10 px-6 py-20 sm:px-10 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:justify-items-stretch md:gap-x-[6vw] md:pr-[10vw]">
+      <div className="relative flex flex-1 flex-col items-center px-6 pb-14 pt-[42vh] sm:px-10 md:grid md:grid-cols-[minmax(0,1fr)_auto] md:justify-items-stretch md:gap-x-[6vw] md:py-20 md:pr-[10vw]">
         <nav aria-label="Main menu" className="w-full max-w-xl md:col-start-2">
           <NavList isActive={isActive} />
         </nav>
@@ -74,7 +76,7 @@ export function Hero({ profile }: { profile: Profile }) {
                 }
           }
         >
-          <GlassesCanvas active={isActive} />
+          <GlassesCanvas active={isActive} centered={!isDesktop} />
         </motion.div>
       </motion.div>
     </main>

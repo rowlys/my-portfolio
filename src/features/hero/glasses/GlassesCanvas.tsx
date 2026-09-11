@@ -8,7 +8,13 @@ import { GlassesGlyph } from "./GlassesGlyph";
 import { CanvasBoundary } from "./CanvasBoundary";
 import { CameraRig } from "./CameraRig";
 
-export function GlassesCanvas({ active = false }: { active?: boolean }) {
+export function GlassesCanvas({
+  active = false,
+  centered = false,
+}: {
+  active?: boolean;
+  centered?: boolean;
+}) {
   const lensRef = useRef<LensTarget | null>(null);
   const modelRadiusRef = useRef(1);
 
@@ -31,9 +37,9 @@ export function GlassesCanvas({ active = false }: { active?: boolean }) {
           <directionalLight position={[3, 4, 5]} intensity={2.4} />
           <directionalLight position={[-4, -2, -3]} intensity={0.4} />
           <Suspense fallback={<GlassesLoading />}>
-            <GlassesModel active={active} lensRef={lensRef} modelRadiusRef={modelRadiusRef} />
+            <GlassesModel active={active} centered={centered} lensRef={lensRef} modelRadiusRef={modelRadiusRef} />
           </Suspense>
-          <CameraRig active={active} lensRef={lensRef} modelRadiusRef={modelRadiusRef} />
+          <CameraRig active={active} centered={centered} lensRef={lensRef} modelRadiusRef={modelRadiusRef} />
         </Canvas>
       </CanvasBoundary>
     </div>
