@@ -29,7 +29,7 @@ function ClassLine({ tagline }: { tagline: string }) {
     .filter(Boolean)
     .join(" / ");
 
-  return <p className={LABEL_CLASS}>CLASS // {classLine}</p>;
+  return <p className={LABEL_CLASS}>CLASS: {classLine}</p>;
 }
 
 function GpaMeter({ gpa }: { gpa: number }) {
